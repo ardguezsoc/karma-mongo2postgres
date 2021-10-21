@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  slack_id VARCHAR(20) NOT NULL UNIQUE,
+  organization VARCHAR(20) REFERENCES organization(slack_id) ON DELETE RESTRICT,
+  email VARCHAR(250)
+);
