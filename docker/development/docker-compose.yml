@@ -1,21 +1,16 @@
-version: "3"
+version: "3.6"
 
 services:
   mongo:
-    build: ./../mongo
+    image: mongo:4.4.10
     container_name: mongo-gratitude-bot
     environment:
-      - MONGO_DB_APP_PASSWORD=node
-      - MONGO_DB_APP_USERNAME=node
-      - MONGO_DB_APP_DATABASE=kaas-prod
+      MONGO_INITDB_ROOT_USERNAME: node
+      MONGO_INITDB_ROOT_PASSWORD: node
     ports:
-      - "27017:27017"
-    healthcheck:
-      test: ["CMD", "echo", "show dbs", "|", "mongo"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    command: mongod
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
   postgresql:
     image: postgres:14-alpine3.14
     container_name: postgres-gratitude-stats
@@ -23,3 +18,6 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: password
+
+volumes:
+  mongodb_data_container:
