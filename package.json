@@ -18,6 +18,7 @@
     "qa": "npm run lint && npm run test",
     "precommit": "npm run lint",
     "prepush": "npm run test",
+    "predocker:development:up": "docker-compose --file docker/development/docker-compose.yml down --rmi local",
     "docker:development:up": "docker-compose --file docker/development/docker-compose.yml up -d --force-recreate"
   },
   "husky": {
