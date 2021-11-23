@@ -94,55 +94,38 @@ module.exports = () => {
       },
     };
 
-    const runCollection = collectionName => async (query = {}) => {
-      let item;
-      let doc;
-      try {
-        const collection = await database.collection(collectionName);
-        // const query = { timestamp: { $gt: new Date('2021-06-01') } };
-        // const query = { };
-        const options = { };
-        // const options = { limit: 1};
-
-        const cursor = collection.find(query, options);
-
-        const size = await cursor.count();
-        if (size === 0) {
-          logger.warn(`No documents found for collection ${collectionName}!`);
-        }
-        logger.info(`There are ${size} ${collectionName} documents`);
-
-        let counter = 0;
-
-        // eslint-disable-next-line no-restricted-syntax
-        for await (const document of cursor) {
-          // logger.info('-----------------------------------------------');
-          // logger.info(JSON.stringify(document, null, 2));
-          doc = document;
-
-          const { mapping, getArray, insertQueryName } = collections[collectionName];
-          item = mapping(document);
-          if (item) {
-            await pg.query(insertQueryName, getArray(item));
-          }
-          counter += 1;
-          if (counter % 100 === 0) {
-            logger.info(`${counter} ${collectionName} documents inserted`);
-          }
-        }
-        logger.info(`FINISH: ${counter} ${collectionName} documents inserted`);
-      } catch (err) {
-        logger.error(err);
-        logger.info(JSON.stringify(item, null, 4));
-        logger.info(JSON.stringify(doc, null, 4));
+    const runCollection = collectionName => async (query = {}, options = {}) => {
+      const collection = await database.collection(collectionName);
+      // const query = { timestamp: { $gt: new Date('2021-06-01') } };
+      // const options = { limit: 1};
+      const documents = await collection.find(query, options);
+      const count = await documents.count();
+      if (count === 0) {
+        logger.warn(`No documents found for collection ${collectionName}!`);
       }
+      logger.info(`There are ${count} ${collectionName} documents`);
+
+      await Promise.all(documents.map(async documentDAO => {
+        const { mapping, getArray, insertQueryName } = collections[collectionName];
+        const documentBO = mapping(documentDAO);
+        if (documentBO) {
+          await pg.query(insertQueryName, getArray(documentBO));
+        } else {
+          throw new Error(`Unknow "mapping" property for document: ${JSON.stringify(documentDAO, null, 4)}`);
+        }
+      }));
     };
 
     const run = async () => {
-      await runCollection('organization')();
-      await runCollection('karma')();
-      await runCollection('users')();
-      await runCollection('history')({ timestamp: { $gt: new Date('2021-09-01') } });
+      try {
+        await runCollection('organization')();
+        await runCollection('karma')();
+        await runCollection('users')();
+        await runCollection('history')({ timestamp: { $gt: new Date('2021-09-01') } });
+      } catch (error) {
+        logger.error(error);
+        process.exit(-1); // "echo $?" for debuging exit codes
+      }
     };
 
     return {
