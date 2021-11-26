@@ -2,12 +2,11 @@ const debug = require('debug')('karma-mongo2postgres:controller');
 
 module.exports = () => {
   const start = async ({
-    logger, config, store, pg,
+    logger, store, pg,
   }) => {
     debug('Initializing controller dependencies...');
-    const { databaseName } = config;
     const { mongo } = store;
-    const database = mongo.db(databaseName);
+    const database = mongo;
 
     const collections = {
       organization: {
@@ -124,6 +123,7 @@ module.exports = () => {
         await runCollection('history')({ timestamp: { $gt: new Date('2021-09-01') } });
       } catch (error) {
         logger.error(error);
+        debug(error);
         process.exit(-1); // "echo $?" for debuging exit codes
       }
     };

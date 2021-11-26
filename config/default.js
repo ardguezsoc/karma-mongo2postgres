@@ -3,13 +3,8 @@ module.exports = {
     host: '0.0.0.0',
     port: 4000,
   },
-  mongodb: {
-    url: process.env.MONGODB_CONNECTIONSTRING,
-    options: {
-      poolSize: 5,
-      useUnifiedTopology: true,
-    },
-    showConnectionString: true,
+  mongo: {
+    connectionString: process.env.MONGODB_CONNECTIONSTRING,
   },
   store: {
     databaseName: 'kaas-prod',

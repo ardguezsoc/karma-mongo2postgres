@@ -1,17 +1,17 @@
 const debug = require('debug')('store:mongo');
 
 module.exports = () => {
-  let mongo;
-  const start = async ({ mongodb }) => {
-    mongo = mongodb;
+  let mongoClient;
+  const start = async ({ config, mongo }) => {
+    mongoClient = mongo;
     return {
-      mongo,
+      mongo: mongoClient.db(config.databaseName),
     };
   };
 
   const stop = async () => {
     debug('Closing CosmoDB/MongoDB connection...');
-    await mongo.close();
+    await mongoClient.close();
   };
 
   return { start, stop };
